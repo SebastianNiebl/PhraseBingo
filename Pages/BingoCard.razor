@@ -1,0 +1,60 @@
+﻿@inject BingoCardService BingoCardService
+@using System.IO
+@using PhraseBingo;
+<!--<input type="file" @ref="fileInput" />-->
+@if (!won)
+{
+
+    @if (bingoCard == null)
+    {
+        <button @onclick="LoadCard">Load Card</button>
+    }
+
+    @if (bingoCard != null)
+    {
+        <table>
+            @for (int i = 0; i < PhraseBingo.BingoCard.Size; i++)
+            {
+                <tr>
+                    @for (int j = 0; j < PhraseBingo.BingoCard.Size; j++)
+                    {
+                        var row = i;
+                        var col = j;
+                        <td>
+                            <button @onclick="@(e => MarkCell(row, col))" style="@(bingoCard.Marked[i, j] ? "text-decoration: line-through;" : "")">
+                                @bingoCard.Phrases[i, j] @i @j 
+                            </button>
+                        </td>
+                    }
+                </tr>
+            }
+        </table>
+    }
+}
+@if (won)
+{
+    <h2>BINGO!</h2>
+    <button @onclick="@(LoadCard)">
+        Replay
+    </button>
+}
+
+@code {
+
+    private PhraseBingo.BingoCard bingoCard;
+    private bool won;
+
+    private async Task LoadCard()
+    {
+
+        bingoCard = await BingoCardService.GenerateCardAsync();
+        won = false;
+    }
+
+    private void MarkCell(int row, int col)
+    {
+
+        bingoCard.Mark(row, col);
+        won = bingoCard.CheckWin();
+    }
+}
